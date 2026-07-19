@@ -1,0 +1,58 @@
+:root {
+  /* Premium Bento UI Colors */
+  --bg-page: #aebca7; /* Muted sage green */
+  --bg-app: #ffffff;
+  --bg-sidebar: #1a1b1e;
+  --bg-card: #f8fafc;
+  --bg-card-dark: #1a1b1e;
+  
+  --accent-lime: #d3f969; /* Neon lime yellow */
+  --accent-lime-hover: #c4f04c;
+  
+  --text-primary: #1a1b1e;
+  --text-secondary: #64748b;
+  --text-inverse: #ffffff;
+  
+  /* Borders & Shadows */
+  --border-color: rgba(0, 0, 0, 0.05);
+  --border-radius-app: 32px;
+  --border-radius-card: 24px;
+  --border-radius-sm: 12px;
+  
+  --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+  
+  /* Typography */
+  --font-family: 'Outfit', sans-serif;
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+  
+  /* Button & Status Colors */
+  --accent-primary: #10b981;
+  --accent-primary-hover: #059669;
+  --bg-tertiary: #f1f5f9;
+  --error-color: #ef4444;
+}
+
+[data-theme='dark'] {
+  --bg-page: #0a0a0a; 
+  --bg-app: #151515;
+  --bg-sidebar: #000000;
+  --bg-card: #1e1e1e;
+  --bg-card-dark: #2a2a2a;
+  
+  --accent-lime: #b6d946; 
+  --accent-lime-hover: #9cba39;
+  
+  --text-primary: #f0f0f0;
+  --text-secondary: #a0a0a0;
+  --text-inverse: #ffffff;
+  
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 4px 20px rgba(0,0,0,0.5);
+  
+  /* Button & Status Colors */
+  --accent-primary: #10b981;
+  --accent-primary-hover: #059669;
+  --bg-tertiary: #2a2a2a;
+  --error-color: #ef4444;
+}

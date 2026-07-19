@@ -1,0 +1,87 @@
+.matches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.match-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.match-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.match-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--accent-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.match-info {
+  flex: 1;
+}
+
+.match-info h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.2rem;
+}
+
+.match-score {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--accent-primary);
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 700;
+  font-size: 1.25rem;
+  border: 1px solid var(--accent-primary);
+}
+
+[data-theme='dark'] .match-score {
+  background: rgba(57, 255, 20, 0.1);
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-xl {
+  font-size: 1.5rem;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.py-5 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.p-3 {
+  padding: 1rem;
+}
+
+.p-4 {
+  padding: 1.5rem;
+}
+
+.breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.reasons-list {
+  padding-left: 0;
+}

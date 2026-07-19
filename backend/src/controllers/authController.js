@@ -48,7 +48,15 @@ const registeredUser = async (req, res, next) => {
             data: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                gymId: user.gymId,
+                goal: user.goal,
+                experienceLevel: user.experienceLevel,
+                isAvailable: user.isAvailable,
+                profileVisibility: user.profileVisibility,
+                isMatchAvailable: user.isMatchAvailable,
+                showWorkoutTime: user.showWorkoutTime,
+                partnerRequestPermission: user.partnerRequestPermission
             }
         });
 
@@ -105,7 +113,15 @@ const loginUser = async (req, res, next) => {
             data: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                gymId: user.gymId,
+                goal: user.goal,
+                experienceLevel: user.experienceLevel,
+                isAvailable: user.isAvailable,
+                profileVisibility: user.profileVisibility,
+                isMatchAvailable: user.isMatchAvailable,
+                showWorkoutTime: user.showWorkoutTime,
+                partnerRequestPermission: user.partnerRequestPermission
             }
         });
 
@@ -123,7 +139,15 @@ const getCurrentUser = async (req, res, next) => {
             data: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                gymId: user.gymId,
+                goal: user.goal,
+                experienceLevel: user.experienceLevel,
+                isAvailable: user.isAvailable,
+                profileVisibility: user.profileVisibility,
+                isMatchAvailable: user.isMatchAvailable,
+                showWorkoutTime: user.showWorkoutTime,
+                partnerRequestPermission: user.partnerRequestPermission
             }
         });
     } catch (error) {

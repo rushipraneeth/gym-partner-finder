@@ -11,8 +11,12 @@ import blockRoutes from "./routes/blockRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import conversationRoutes from "./routes/conversationRoutes.js";
 import messageRoutes from "./routes/messageRoutes.js";
+import cors from "cors";
 
 const app = express();
+
+// Enable CORS for all origins
+app.use(cors());
 
 // Allows Express to read JSON data from req.body
 app.use(express.json());
