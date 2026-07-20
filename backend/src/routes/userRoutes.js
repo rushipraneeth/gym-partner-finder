@@ -4,6 +4,7 @@ import {
   selectGym,
   getMatchingProfile,
   updatePrivacySettings,
+  getNearbyGyms,
 } from "../controllers/userController.js";
 import protect from "../middleware/authMiddleware.js";
 
@@ -16,5 +17,7 @@ router.patch("/gym", protect, selectGym);
 router.get("/matching-profile", protect, getMatchingProfile);
 
 router.patch("/privacy", protect, updatePrivacySettings);
+
+router.get("/nearby-gyms", protect, getNearbyGyms);
 
 export default router;

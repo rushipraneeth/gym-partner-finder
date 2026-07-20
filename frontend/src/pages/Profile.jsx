@@ -40,20 +40,11 @@ const Profile = () => {
     navigator.geolocation.getCurrentPosition(async (position) => {
       const { latitude, longitude } = position.coords;
       try {
-        const query = `[out:json];node(around:5000,${latitude},${longitude})["leisure"="fitness_centre"];out;`;
-        const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
-        const data = await res.json();
+        const res = await api.get(`/api/users/nearby-gyms?lat=${latitude}&lon=${longitude}`);
         
-        const gyms = data.elements
-          .filter(el => el.tags && el.tags.name)
-          .map(el => ({
-            id: `osm-${el.id}`,
-            name: el.tags.name
-          }));
-          
-        if (gyms.length > 0) {
-          setNearbyGyms(gyms);
-          addToast(`Found ${gyms.length} real gyms near you!`, 'success');
+        if (res.data.success && res.data.gyms.length > 0) {
+          setNearbyGyms(res.data.gyms);
+          addToast(`Found ${res.data.gyms.length} real gyms near you!`, 'success');
         } else {
           addToast('No gyms found within 5km of your location.', 'info');
         }
