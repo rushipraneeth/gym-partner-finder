@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import WorkoutSchedule from "../models/WorkoutSchedule.js";
+import https from "https";
 
 export const createUserProfile = async (req, res, next) => {
   try {
@@ -180,26 +181,42 @@ export const getNearbyGyms = async (req, res, next) => {
     }
 
     const query = `[out:json];node(around:5000,${lat},${lon})["leisure"="fitness_centre"];out;`;
-    
-    // Dynamic import for node-fetch is needed if Node version is old, but Express 5 / Node 18+ has global fetch.
-    const response = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
-    
-    if (!response.ok) {
-      throw new Error(`Overpass API responded with status ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    const gyms = data.elements
-      .filter(el => el.tags && el.tags.name)
-      .map(el => ({
-        id: `osm-${el.id}`,
-        name: el.tags.name
-      }));
-      
-    res.status(200).json({
-      success: true,
-      gyms
+    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+
+    https.get(url, (apiRes) => {
+      let data = '';
+
+      apiRes.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      apiRes.on('end', () => {
+        if (apiRes.statusCode !== 200) {
+          console.error(`Overpass API responded with status ${apiRes.statusCode}`);
+          return next(new Error(`Overpass API responded with status ${apiRes.statusCode}`));
+        }
+        
+        try {
+          const parsedData = JSON.parse(data);
+          const gyms = parsedData.elements
+            .filter(el => el.tags && el.tags.name)
+            .map(el => ({
+              id: `osm-${el.id}`,
+              name: el.tags.name
+            }));
+            
+          res.status(200).json({
+            success: true,
+            gyms
+          });
+        } catch (parseError) {
+          console.error("Error parsing Overpass API response", parseError);
+          next(parseError);
+        }
+      });
+    }).on('error', (err) => {
+      console.error("HTTPS request error to Overpass:", err);
+      next(err);
     });
   } catch (error) {
     console.error("Error fetching gyms from Overpass:", error);
