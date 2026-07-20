@@ -164,10 +164,15 @@ const Matches = () => {
           <h3>No matches found right now.</h3>
           {!hasSchedule ? (
             <>
-              <p className="text-secondary">You must configure your Weekly Workout Schedule first to find matches.</p>
-              <Button variant="primary" className="mt-4" onClick={() => window.location.href = '/schedule'}>
-                Configure Schedule
-              </Button>
+              <p className="text-secondary">You must complete your Profile (Gym & Goals) and Weekly Workout Schedule first to find matches.</p>
+              <div className="flex gap-4 justify-center mt-4">
+                <Button variant="primary" onClick={() => window.location.href = '/profile'}>
+                  Complete Profile
+                </Button>
+                <Button variant="secondary" onClick={() => window.location.href = '/schedule'}>
+                  Configure Schedule
+                </Button>
+              </div>
             </>
           ) : (
             <p className="text-secondary">There are no users in your gym matching your schedule &gt;60% right now. Check back later!</p>
