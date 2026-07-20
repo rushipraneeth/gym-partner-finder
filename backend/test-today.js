@@ -10,29 +10,45 @@ async function run() {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("Connected to DB");
     
-    // Find mourya
-    const user = await User.findOne({ username: 'mourya' });
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Find ookine
+    const user = await User.findOne({ username: 'ookine' });
+    const getISTDateString = () => {
+      return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    };
+    
+    const todayStr = getISTDateString();
     
     const currentUserToday = await TodayWorkout.findOne({
       userId: user._id,
-      date: today,
+      localDateString: todayStr,
       isLookingToday: true,
     });
     
-    console.log("Current user today:", currentUserToday);
+    console.log("currentUserToday:", currentUserToday);
+    
+    if (!currentUserToday) {
+       console.log("No current user today!");
+       return;
+    }
     
     const escapedGymId = currentUserToday.gymId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     
     const todayMatches = await TodayWorkout.find({
       gymId: { $regex: new RegExp(`^${escapedGymId}$`, 'i') },
-      date: today,
+      localDateString: todayStr,
       isLookingToday: true,
       userId: { $ne: user._id },
     }).populate("userId", "username email gymId showWorkoutTime");
     
-    console.log("Found matches:", todayMatches.length);
+    console.log("Found raw todayMatches:", todayMatches.length);
+    
+    const eligibleMatches = [];
+    
+    // simulate matching logic...
+    for (const candidate of todayMatches) {
+       console.log(`Candidate: ${candidate.userId.username} | times: ${candidate.startTime}-${candidate.endTime}`);
+    }
+    
   } catch (err) {
     console.error("ERROR:", err);
   } finally {

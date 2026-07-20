@@ -101,10 +101,22 @@ const LookingToday = () => {
         <div className="glass-card text-center py-5 border-warning" style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚡</div>
           <h2 className="mb-2">Find a Partner for Today</h2>
-          <p className="text-secondary mb-4">Activate this feature to find other users at your gym who are also looking for a partner today.</p>
-          <Button variant="primary" size="lg" onClick={handleActivate}>
-            Activate Looking Today
-          </Button>
+          
+          {!user?.gymId ? (
+            <>
+              <p className="text-secondary mb-4">You must select a gym in your Profile before you can find partners today!</p>
+              <Button variant="primary" size="lg" onClick={() => window.location.href = '/profile'}>
+                Complete Profile
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-secondary mb-4">Activate this feature to find other users at your gym who are also looking for a partner today.</p>
+              <Button variant="primary" size="lg" onClick={handleActivate}>
+                Activate Looking Today
+              </Button>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex-col gap-4">

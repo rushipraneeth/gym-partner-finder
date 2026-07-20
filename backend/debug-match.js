@@ -6,15 +6,22 @@ import TodayWorkout from './src/models/TodayWorkout.js';
 dotenv.config();
 
 async function run() {
-  await mongoose.connect(process.env.MONGO_URI);
-  
-  const users = await User.find({});
-  const todays = await TodayWorkout.find({});
-  
-  console.log("Users:", users.map(u => ({ id: u._id, username: u.username, gymId: u.gymId })));
-  console.log("TodayWorkouts:", todays.map(t => ({ userId: t.userId, gymId: t.gymId, date: t.date, startTime: t.startTime, endTime: t.endTime, muscleGroups: t.muscleGroups })));
-  
-  process.exit(0);
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    
+    const users = await User.find({});
+    console.log("USERS:");
+    users.forEach(u => console.log(`- ${u.username} (${u._id}) | gymId: ${u.gymId}`));
+
+    const todays = await TodayWorkout.find({});
+    console.log("\nTODAY WORKOUTS:");
+    todays.forEach(t => console.log(`- User: ${t.userId} | localDate: ${t.localDateString} | gymId: ${t.gymId} | times: ${t.startTime}-${t.endTime}`));
+    
+  } catch (err) {
+    console.error(err);
+  } finally {
+    process.exit(0);
+  }
 }
 
 run();
