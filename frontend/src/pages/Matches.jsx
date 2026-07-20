@@ -137,6 +137,20 @@ const Matches = () => {
       </div>
 
       <div className="mb-4">
+        {activeTab === 'recommended' ? (
+          <>
+            <h2>Your Best Matches</h2>
+            <p className="text-secondary">Matches are calculated based on your workout schedule, gym location, and fitness goals (Requires {">"}60% match score).</p>
+          </>
+        ) : (
+          <>
+            <h2>Discover All Users</h2>
+            <p className="text-secondary">Quick view of all gym members matching your schedule {">"}60%.</p>
+          </>
+        )}
+      </div>
+
+      <div className="mb-4">
         <Input 
           placeholder="Search users by username..." 
           value={searchQuery}
@@ -144,71 +158,72 @@ const Matches = () => {
         />
       </div>
 
-      {activeTab === 'recommended' ? (
-        filteredMatches.length === 0 ? (
-          <div className="empty-state glass-card text-center py-5">
-            <h3>No matches found right now.</h3>
-            <p className="text-secondary">Try updating your schedule or modifying your profile goals.</p>
-          </div>
-        ) : (
-          <div className="matches-grid">
-            {filteredMatches.map((matchData) => {
-            const { candidate, matchPercentage, scoreBreakdown } = matchData;
-            return (
-              <div key={candidate._id} className="glass-card match-card">
-                <div className="match-card-header">
-                  <div className="match-avatar">{candidate.username.charAt(0).toUpperCase()}</div>
-                  <div className="match-info">
-                    <h3>{candidate.username}</h3>
-                    <span className="text-secondary text-sm">{candidate.goal} • {candidate.experienceLevel}</span>
-                  </div>
-                  <div className="match-score">
-                    {matchPercentage}
-                  </div>
-                </div>
-                
-                <div className="match-card-body mt-4">
-                  <p className="text-sm"><strong>Time Overlap:</strong> {scoreBreakdown.timeScore}</p>
-                  <p className="text-sm"><strong>Workout Similarity:</strong> {scoreBreakdown.workoutScore}</p>
-                  
-                  <div className="flex gap-2 mt-4">
-                    <Button variant="secondary" className="flex-1" onClick={() => openDetails(matchData)}>
-                      View Details
-                    </Button>
-                    {renderActionButton(candidate._id)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+      {filteredMatches.length === 0 ? (
+        <div className="empty-state glass-card text-center py-5">
+          <h3>No matches found right now.</h3>
+          <p className="text-secondary">You must configure your Weekly Workout Schedule first, or there are no users matching you &gt;60% right now.</p>
+          <Button variant="primary" className="mt-4" onClick={() => window.location.href = '/schedule'}>
+            Configure Schedule
+          </Button>
         </div>
-        )
-      ) : (
-        filteredUsers.length === 0 ? (
-          <div className="empty-state glass-card text-center py-5">
-            <h3>No users found matching "{searchQuery}".</h3>
-          </div>
-        ) : (
-          <div className="matches-grid">
-            {filteredUsers.map((candidate) => (
-              <div key={candidate._id} className="glass-card match-card">
-                <div className="match-card-header">
-                  <div className="match-avatar">{candidate.username.charAt(0).toUpperCase()}</div>
-                  <div className="match-info">
-                    <h3>{candidate.username}</h3>
-                    <span className="text-secondary text-sm">{candidate.goal || 'No goal set'} • {candidate.experienceLevel || 'No level set'}</span>
-                  </div>
+      ) : activeTab === 'recommended' ? (
+        <div className="matches-grid">
+          {filteredMatches.map((matchData) => {
+          const { candidate, matchPercentage, scoreBreakdown } = matchData;
+          return (
+            <div key={candidate._id} className="glass-card match-card">
+              <div className="match-card-header">
+                <div className="match-avatar">{candidate.username.charAt(0).toUpperCase()}</div>
+                <div className="match-info">
+                  <h3>{candidate.username}</h3>
+                  <span className="text-secondary text-sm">{candidate.goal} • {candidate.experienceLevel}</span>
                 </div>
-                
-                <div className="match-card-body mt-4">
-                  <div className="flex mt-4">
-                    {renderActionButton(candidate._id)}
-                  </div>
+                <div className="match-score">
+                  {matchPercentage}
                 </div>
               </div>
-            ))}
-          </div>
-        )
+              
+              <div className="match-card-body mt-4">
+                <p className="text-sm"><strong>Time Overlap:</strong> {scoreBreakdown.timeScore}</p>
+                <p className="text-sm"><strong>Workout Similarity:</strong> {scoreBreakdown.workoutScore}</p>
+                
+                <div className="flex gap-2 mt-4">
+                  <Button variant="secondary" className="flex-1" onClick={() => openDetails(matchData)}>
+                    View Details
+                  </Button>
+                  {renderActionButton(candidate._id)}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        </div>
+      ) : (
+        <div className="matches-grid">
+          {filteredMatches.map((matchData) => {
+          const { candidate, matchPercentage } = matchData;
+          return (
+            <div key={candidate._id} className="glass-card match-card">
+              <div className="match-card-header">
+                <div className="match-avatar">{candidate.username.charAt(0).toUpperCase()}</div>
+                <div className="match-info">
+                  <h3>{candidate.username}</h3>
+                  <span className="text-secondary text-sm">{candidate.goal}</span>
+                </div>
+                <div className="match-score">
+                  {matchPercentage}
+                </div>
+              </div>
+              
+              <div className="match-card-body mt-4">
+                <div className="flex mt-4">
+                  {renderActionButton(candidate._id)}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        </div>
       )}
 
       {selectedMatch && (

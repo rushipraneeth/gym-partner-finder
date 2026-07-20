@@ -6,7 +6,7 @@ import Button from '../components/Button';
 import Input from '../components/Input';
 import Loader from '../components/Loader';
 
-const ALL_MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Cardio', 'Full Body'];
+const ALL_MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Cardio', 'Full Body'];
 
 const LookingToday = () => {
   const { user } = useAuth();
@@ -19,6 +19,7 @@ const LookingToday = () => {
   const [selectedMuscles, setSelectedMuscles] = useState([]);
   const [todayMatches, setTodayMatches] = useState([]);
   const [updating, setUpdating] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   useEffect(() => {
     checkStatusAndFetchMatches();
@@ -61,6 +62,8 @@ const LookingToday = () => {
         api.put('/api/today/time', { startTime, endTime })
       ]);
       addToast('Today\'s workout details updated!', 'success');
+      setUpdateSuccess(true);
+      setTimeout(() => setUpdateSuccess(false), 3000);
       checkStatusAndFetchMatches(); // Refresh matches based on new time/muscles
     } catch (error) {
       addToast('Failed to update details', 'error');
@@ -131,8 +134,8 @@ const LookingToday = () => {
                   ))}
                 </div>
               </div>
-              <Button type="submit" variant="secondary" className="mt-4" disabled={updating}>
-                {updating ? 'Updating...' : 'Update Details'}
+              <Button type="submit" variant={updateSuccess ? "primary" : "secondary"} className="mt-4" disabled={updating}>
+                {updating ? 'Updating...' : updateSuccess ? '✓ Updated Successfully!' : 'Update Details'}
               </Button>
             </form>
           </div>

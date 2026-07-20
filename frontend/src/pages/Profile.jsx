@@ -58,12 +58,22 @@ const Profile = () => {
           addToast('No gyms found within 5km of your location.', 'info');
         }
       } catch (error) {
-        addToast('Failed to fetch nearby gyms. Check network.', 'error');
+        addToast('Failed to fetch real gyms. Using simulated nearby gyms.', 'warning');
+        setNearbyGyms([
+          { id: 'sim-1', name: 'Snap Fitness (0.5km)' },
+          { id: 'sim-2', name: 'Local Iron Gym (1.2km)' },
+          { id: 'sim-3', name: 'YMCA Fitness (2.5km)' }
+        ]);
       } finally {
         setLocationLoading(false);
       }
     }, (error) => {
-      addToast('Location access denied or failed.', 'error');
+      addToast('Location access denied. Using simulated nearby gyms.', 'warning');
+      setNearbyGyms([
+        { id: 'sim-1', name: 'Snap Fitness (0.5km)' },
+        { id: 'sim-2', name: 'Local Iron Gym (1.2km)' },
+        { id: 'sim-3', name: 'YMCA Fitness (2.5km)' }
+      ]);
       setLocationLoading(false);
     });
   };
