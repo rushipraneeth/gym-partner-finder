@@ -160,9 +160,12 @@ export const getTodayMatches = async (req, res, next) => {
       });
     }
 
-    // Find all same-gym users
+    // Escape regex characters in gymId just in case
+    const escapedGymId = currentUserToday.gymId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+    
+    // Find all same-gym users (case insensitive)
     const todayMatches = await TodayWorkout.find({
-      gymId: currentUserToday.gymId,
+      gymId: { $regex: new RegExp(`^${escapedGymId}$`, 'i') },
       date: today,
       isLookingToday: true,
       userId: { $ne: userId },

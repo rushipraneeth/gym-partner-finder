@@ -31,8 +31,10 @@ export const getEligibleCandidates = async (req, res, next) => {
       (block) => block.blockerId
     );
 
+    const escapedGymId = currentUser.gymId ? currentUser.gymId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : '';
+
     const candidates = await User.find({
-      gymId: currentUser.gymId,
+      gymId: escapedGymId ? { $regex: new RegExp(`^${escapedGymId}$`, 'i') } : currentUser.gymId,
       _id: {
         $ne: req.userId,
         $nin: [...blockedUserIds, ...blockedByUserIds],
