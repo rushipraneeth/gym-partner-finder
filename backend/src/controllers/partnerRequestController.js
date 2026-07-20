@@ -74,24 +74,27 @@ export const sendPartnerRequest = async (req, res, next) => {
       }
     }
 
-    // Prevent sending request to an already connected user
-    const existingConnection = await Connection.findOne({
-      $or: [
-        {
-          user1: senderId,
-          user2: receiverId,
-        },
-        {
-          user1: receiverId,
-          user2: senderId,
-        },
-      ],
+    // Check if the sender already has ANY partner
+    const senderConnection = await Connection.findOne({
+      $or: [{ user1: senderId }, { user2: senderId }]
     });
 
-    if (existingConnection) {
-      return res.status(400).json({
+    if (senderConnection) {
+      return res.status(403).json({
         success: false,
-        message: "You are already connected with this user.",
+        message: "You already have a gym partner!",
+      });
+    }
+
+    // Check if the receiver already has ANY partner
+    const receiverConnection = await Connection.findOne({
+      $or: [{ user1: receiverId }, { user2: receiverId }]
+    });
+
+    if (receiverConnection) {
+      return res.status(403).json({
+        success: false,
+        message: "This user already has a gym partner.",
       });
     }
 

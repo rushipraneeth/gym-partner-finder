@@ -1,5 +1,6 @@
 import TodayWorkout from "../models/TodayWorkout.js";
 import User from "../models/User.js";
+import Connection from "../models/Connection.js";
 import {
     calculateTimeOverlap,
     calculateWorkoutSimilarity,
@@ -164,15 +165,26 @@ export const getTodayMatches = async (req, res, next) => {
       });
     }
 
+    // Find all users who are already in a connection
+    const allConnections = await Connection.find({});
+    const connectedUserIds = [];
+    allConnections.forEach(conn => {
+      connectedUserIds.push(conn.user1.toString());
+      connectedUserIds.push(conn.user2.toString());
+    });
+
     // Escape regex characters in gymId just in case
     const escapedGymId = currentUserToday.gymId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     
-    // Find all same-gym users (case insensitive) for today (IST)
+    // Find all same-gym users (case insensitive) for today (IST) excluding connected users
     const todayMatches = await TodayWorkout.find({
       gymId: { $regex: new RegExp(`^${escapedGymId}$`, 'i') },
       localDateString: todayStr,
       isLookingToday: true,
-      userId: { $ne: userId },
+      userId: { 
+        $ne: userId,
+        $nin: connectedUserIds
+      },
     }).populate(
       "userId",
       "username email gymId showWorkoutTime"

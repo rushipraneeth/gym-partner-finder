@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import WorkoutSchedule from "../models/WorkoutSchedule.js";
 import Block from "../models/Block.js";
+import Connection from "../models/Connection.js";
 import { calculateMatchScore } from "../utils/matchCalculator.js";
 import {
     generateTimeReason,
@@ -31,13 +32,21 @@ export const getEligibleCandidates = async (req, res, next) => {
       (block) => block.blockerId
     );
 
+    // Find all users who are already in a connection
+    const allConnections = await Connection.find({});
+    const connectedUserIds = [];
+    allConnections.forEach(conn => {
+      connectedUserIds.push(conn.user1.toString());
+      connectedUserIds.push(conn.user2.toString());
+    });
+
     const escapedGymId = currentUser.gymId ? currentUser.gymId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&') : '';
 
     const candidates = await User.find({
       gymId: escapedGymId ? { $regex: new RegExp(`^${escapedGymId}$`, 'i') } : currentUser.gymId,
       _id: {
         $ne: req.userId,
-        $nin: [...blockedUserIds, ...blockedByUserIds],
+        $nin: [...blockedUserIds, ...blockedByUserIds, ...connectedUserIds],
       },
       isAvailable: true,
       isMatchAvailable: true,
