@@ -40,7 +40,9 @@ const Profile = () => {
     navigator.geolocation.getCurrentPosition(async (position) => {
       const { latitude, longitude } = position.coords;
       try {
-        const url = `https://nominatim.openstreetmap.org/search?format=json&q=gym+fitness&lat=${latitude}&lon=${longitude}&limit=20`;
+        const delta = 0.045;
+        const viewbox = `${longitude - delta},${latitude + delta},${longitude + delta},${latitude - delta}`;
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=gym&viewbox=${viewbox}&bounded=1&limit=20`;
         const response = await fetch(url);
         
         if (!response.ok) throw new Error('Failed to fetch');
