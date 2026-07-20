@@ -5,6 +5,10 @@ import {
     calculateWorkoutSimilarity,
 } from "../utils/matchCalculator.js";
 
+const getISTDateString = () => {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+};
+
 export const activateLookingToday = async (req, res, next) => {
   try {
     const userId = req.userId;
@@ -27,13 +31,13 @@ export const activateLookingToday = async (req, res, next) => {
       });
     }
 
-    // Time window for "Today" (last 24 hours)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Get the current date string in IST (e.g. "2026-07-20")
+    const todayStr = getISTDateString();
 
-    // Check if already activated in the last 24 hours
+    // Check if already activated today in IST
     const existingStatus = await TodayWorkout.findOne({
       userId,
-      createdAt: { $gte: oneDayAgo },
+      localDateString: todayStr,
     });
 
     if (existingStatus) {
@@ -47,7 +51,8 @@ export const activateLookingToday = async (req, res, next) => {
     const todayWorkout = await TodayWorkout.create({
       userId,
       gymId: user.gymId,
-      date: new Date(), // Just store current time
+      date: new Date(),
+      localDateString: todayStr,
       isLookingToday: true,
       startTime: "17:00",
       endTime: "18:30",
@@ -70,13 +75,13 @@ export const updateTodayWorkout = async (req, res, next) => {
     const userId = req.userId;
     const { muscleGroups } = req.body;
 
-    // Time window for "Today" (last 24 hours)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Get today's IST string
+    const todayStr = getISTDateString();
 
     // Find today's record
     const todayWorkout = await TodayWorkout.findOne({
       userId,
-      createdAt: { $gte: oneDayAgo },
+      localDateString: todayStr,
     });
 
     if (!todayWorkout) {
@@ -106,13 +111,13 @@ export const updateTodayWorkoutTime = async (req, res, next) => {
     const userId = req.userId;
     const { startTime, endTime } = req.body;
 
-    // Time window for "Today" (last 24 hours)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Get today's IST string
+    const todayStr = getISTDateString();
 
     // Find today's record
     const todayWorkout = await TodayWorkout.findOne({
       userId,
-      createdAt: { $gte: oneDayAgo },
+      localDateString: todayStr,
     });
 
     if (!todayWorkout) {
@@ -142,13 +147,13 @@ export const getTodayMatches = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    // Time window for "Today" (last 24 hours)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Get today's IST string
+    const todayStr = getISTDateString();
 
-    // Find current user's active TodayWorkout (within last 24h)
+    // Find current user's active TodayWorkout
     const currentUserToday = await TodayWorkout.findOne({
       userId,
-      createdAt: { $gte: oneDayAgo },
+      localDateString: todayStr,
       isLookingToday: true,
     });
 
@@ -162,10 +167,10 @@ export const getTodayMatches = async (req, res, next) => {
     // Escape regex characters in gymId just in case
     const escapedGymId = currentUserToday.gymId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     
-    // Find all same-gym users (case insensitive) within last 24h
+    // Find all same-gym users (case insensitive) for today (IST)
     const todayMatches = await TodayWorkout.find({
       gymId: { $regex: new RegExp(`^${escapedGymId}$`, 'i') },
-      createdAt: { $gte: oneDayAgo },
+      localDateString: todayStr,
       isLookingToday: true,
       userId: { $ne: userId },
     }).populate(

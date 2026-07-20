@@ -18,6 +18,10 @@ const todayWorkoutSchema = new mongoose.Schema(
       required: true,
     },
 
+    localDateString: {
+      type: String,
+    },
+
     isLookingToday: {
       type: Boolean,
       default: false,
