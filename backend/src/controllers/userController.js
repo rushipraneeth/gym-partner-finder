@@ -180,10 +180,15 @@ export const getNearbyGyms = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Latitude and longitude are required" });
     }
 
-    const query = `[out:json];node(around:5000,${lat},${lon})["leisure"="fitness_centre"];out;`;
-    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=gym+fitness&lat=${lat}&lon=${lon}&limit=20`;
 
-    https.get(url, (apiRes) => {
+    const options = {
+      headers: {
+        'User-Agent': 'GymPartnerFinder/1.0 (Contact: admin@example.com)'
+      }
+    };
+
+    https.get(url, options, (apiRes) => {
       let data = '';
 
       apiRes.on('data', (chunk) => {
@@ -192,30 +197,35 @@ export const getNearbyGyms = async (req, res, next) => {
 
       apiRes.on('end', () => {
         if (apiRes.statusCode !== 200) {
-          console.error(`Overpass API responded with status ${apiRes.statusCode}`);
-          return next(new Error(`Overpass API responded with status ${apiRes.statusCode}`));
+          console.error(`Nominatim API responded with status ${apiRes.statusCode}`);
+          return next(new Error(`Nominatim API responded with status ${apiRes.statusCode}`));
         }
         
         try {
           const parsedData = JSON.parse(data);
-          const gyms = parsedData.elements
-            .filter(el => el.tags && el.tags.name)
+          
+          // Nominatim returns an array of places
+          const gyms = parsedData
+            .filter(el => el.name || el.display_name)
             .map(el => ({
-              id: `osm-${el.id}`,
-              name: el.tags.name
+              id: `nom-${el.place_id}`,
+              name: el.name && el.name.toLowerCase() !== 'gym' ? el.name : (el.display_name.split(',')[0] || 'Local Gym')
             }));
+            
+          // Deduplicate by name
+          const uniqueGyms = Array.from(new Map(gyms.map(item => [item.name, item])).values());
             
           res.status(200).json({
             success: true,
-            gyms
+            gyms: uniqueGyms
           });
         } catch (parseError) {
-          console.error("Error parsing Overpass API response", parseError);
+          console.error("Error parsing Nominatim API response", parseError);
           next(parseError);
         }
       });
     }).on('error', (err) => {
-      console.error("HTTPS request error to Overpass:", err);
+      console.error("HTTPS request error to Nominatim:", err);
       next(err);
     });
   } catch (error) {
