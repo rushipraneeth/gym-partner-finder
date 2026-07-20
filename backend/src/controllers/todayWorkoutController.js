@@ -27,14 +27,13 @@ export const activateLookingToday = async (req, res, next) => {
       });
     }
 
-    // Today's date (time removed)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Time window for "Today" (last 24 hours)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    // Check if already activated today
+    // Check if already activated in the last 24 hours
     const existingStatus = await TodayWorkout.findOne({
       userId,
-      date: today,
+      createdAt: { $gte: oneDayAgo },
     });
 
     if (existingStatus) {
@@ -44,12 +43,15 @@ export const activateLookingToday = async (req, res, next) => {
       });
     }
 
-    // Create today's record
+    // Create today's record with default times so math doesn't fail
     const todayWorkout = await TodayWorkout.create({
       userId,
       gymId: user.gymId,
-      date: today,
+      date: new Date(), // Just store current time
       isLookingToday: true,
+      startTime: "17:00",
+      endTime: "18:30",
+      muscleGroups: []
     });
 
     res.status(201).json({
@@ -68,14 +70,13 @@ export const updateTodayWorkout = async (req, res, next) => {
     const userId = req.userId;
     const { muscleGroups } = req.body;
 
-    // Get today's date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Time window for "Today" (last 24 hours)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     // Find today's record
     const todayWorkout = await TodayWorkout.findOne({
       userId,
-      date: today,
+      createdAt: { $gte: oneDayAgo },
     });
 
     if (!todayWorkout) {
@@ -105,14 +106,13 @@ export const updateTodayWorkoutTime = async (req, res, next) => {
     const userId = req.userId;
     const { startTime, endTime } = req.body;
 
-    // Get today's date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Time window for "Today" (last 24 hours)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     // Find today's record
     const todayWorkout = await TodayWorkout.findOne({
       userId,
-      date: today,
+      createdAt: { $gte: oneDayAgo },
     });
 
     if (!todayWorkout) {
@@ -142,14 +142,13 @@ export const getTodayMatches = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    // Get today's date
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Time window for "Today" (last 24 hours)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    // Find current user's TodayWorkout
+    // Find current user's active TodayWorkout (within last 24h)
     const currentUserToday = await TodayWorkout.findOne({
       userId,
-      date: today,
+      createdAt: { $gte: oneDayAgo },
       isLookingToday: true,
     });
 
@@ -163,10 +162,10 @@ export const getTodayMatches = async (req, res, next) => {
     // Escape regex characters in gymId just in case
     const escapedGymId = currentUserToday.gymId.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     
-    // Find all same-gym users (case insensitive)
+    // Find all same-gym users (case insensitive) within last 24h
     const todayMatches = await TodayWorkout.find({
       gymId: { $regex: new RegExp(`^${escapedGymId}$`, 'i') },
-      date: today,
+      createdAt: { $gte: oneDayAgo },
       isLookingToday: true,
       userId: { $ne: userId },
     }).populate(
