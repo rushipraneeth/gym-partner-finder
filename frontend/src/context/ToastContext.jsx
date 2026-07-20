@@ -36,8 +36,9 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((toast) => (
           <div key={toast.id} style={{
             background: toast.type === 'error' ? 'var(--error-color)' : 
-                        toast.type === 'success' ? 'var(--success-color)' : 'var(--bg-tertiary)',
-            color: toast.type === 'info' ? 'var(--text-primary)' : '#fff',
+                        toast.type === 'success' ? 'var(--accent-primary, #10b981)' : 
+                        toast.type === 'warning' ? '#f59e0b' : 'var(--bg-tertiary)',
+            color: (toast.type === 'info' || !toast.type) ? 'var(--text-primary)' : '#fff',
             padding: '12px 20px',
             borderRadius: 'var(--border-radius)',
             boxShadow: 'var(--card-shadow)',
