@@ -159,11 +159,11 @@ const LookingToday = () => {
             ) : (
               <div className="matches-grid">
                 {todayMatches.map((match) => (
-                  <div key={match.candidate._id} className="glass-card match-card">
+                  <div key={match.candidate.userId._id} className="glass-card match-card">
                     <div className="match-card-header">
-                      <div className="match-avatar">{match.candidate.username.charAt(0).toUpperCase()}</div>
+                      <div className="match-avatar">{match.candidate.userId.username.charAt(0).toUpperCase()}</div>
                       <div className="match-info">
-                        <h3>{match.candidate.username}</h3>
+                        <h3>{match.candidate.userId.username}</h3>
                         <span className="text-secondary text-sm">
                           {match.candidate.startTime} - {match.candidate.endTime}
                         </span>
@@ -173,7 +173,7 @@ const LookingToday = () => {
                       <p className="text-sm"><strong>Overlap:</strong> {match.overlapMinutes} mins</p>
                       <p className="text-sm"><strong>Common Workout:</strong> {match.commonWorkouts.join(', ') || 'None'}</p>
                       <div className="mt-4 flex">
-                        <Button variant="primary" className="w-100" onClick={() => sendRequest(match.candidate._id)}>
+                        <Button variant="primary" className="w-100" onClick={() => sendRequest(match.candidate.userId._id)}>
                           Workout Together (Send Request)
                         </Button>
                       </div>
