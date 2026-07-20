@@ -23,7 +23,6 @@ const Matches = () => {
   const { user } = useAuth(); // Import useAuth to filter out self
 
   const filteredMatches = matches.filter(m => (m.candidate?.username || '').toLowerCase().includes(searchQuery.toLowerCase()));
-  const filteredUsers = allUsers.filter(u => (u.username || '').toLowerCase().includes(searchQuery.toLowerCase()));
 
   useEffect(() => {
     fetchMatches();
