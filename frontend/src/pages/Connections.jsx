@@ -110,22 +110,19 @@ const Connections = () => {
             const partner = conn.user1._id === user.id ? conn.user2 : conn.user1;
             
             return (
-              <div key={conn._id} className="glass-card flex items-center justify-between">
+              <div key={conn._id} className="glass-card flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <div className="match-avatar" style={{width: '50px', height: '50px', fontSize: '1.5rem'}}>
                     {partner.username.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h3 style={{margin: '0 0 0.25rem 0'}}>{partner.username}</h3>
-                    <p className="text-sm text-secondary m-0">{partner.email}</p>
+                    <h3 style={{margin: '0', fontSize: '1.25rem', fontWeight: 600}}>{partner.username}</h3>
                   </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <Button variant="primary" size="sm" onClick={() => openChat(partner._id)}>💬 Chat</Button>
-                  <div className="flex gap-2">
-                    <Button variant="secondary" size="sm" onClick={() => handleBlock(partner._id)}>Block</Button>
-                    <Button variant="secondary" size="sm" style={{color: '#ef4444', borderColor: '#ef4444'}} onClick={() => handleOpenReport(partner)}>Report</Button>
-                  </div>
+                <div className="flex items-center gap-2 w-100">
+                  <Button variant="outline-secondary" size="sm" className="flex-1" onClick={() => handleBlock(partner._id)}>Block</Button>
+                  <Button variant="outline-danger" size="sm" className="flex-1" onClick={() => handleOpenReport(partner)}>Report</Button>
+                  <Button variant="outline-primary" size="sm" className="flex-1" onClick={() => openChat(partner._id)}>Chat</Button>
                 </div>
               </div>
             );

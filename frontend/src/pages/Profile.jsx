@@ -126,29 +126,25 @@ const Profile = () => {
                   </Button>
                 )}
               </div>
-              <select 
+              <input 
+                list="gym-options"
                 className="form-input" 
                 value={gymId} 
                 onChange={(e) => setGymId(e.target.value)}
                 required
                 disabled={!isEditing}
-              >
-                <option value="">-- Select Your Gym --</option>
-                {nearbyGyms.length > 0 && (
-                  <optgroup label="📍 Nearby Gyms (Real)">
-                    {nearbyGyms.map(gym => (
-                      <option key={gym.id} value={gym.id}>{gym.name}</option>
-                    ))}
-                  </optgroup>
-                )}
-                <optgroup label="Default Testing Gyms">
-                  <option value="gold-gym-ny">Gold's Gym (New York)</option>
-                  <option value="planet-fitness-ny">Planet Fitness (New York)</option>
-                  <option value="crunch-ny">Crunch Fitness (New York)</option>
-                  <option value="anytime-la">Anytime Fitness (LA)</option>
-                  <option value="equinox-la">Equinox (LA)</option>
-                </optgroup>
-              </select>
+                placeholder="Type or select your gym..."
+              />
+              <datalist id="gym-options">
+                {nearbyGyms.map(gym => (
+                  <option key={gym.id} value={gym.name} />
+                ))}
+                <option value="Gold's Gym (New York)" />
+                <option value="Planet Fitness (New York)" />
+                <option value="Crunch Fitness (New York)" />
+                <option value="Anytime Fitness (LA)" />
+                <option value="Equinox (LA)" />
+              </datalist>
             </div>
 
             <div className="form-group">

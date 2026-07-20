@@ -1,5 +1,5 @@
 .btn {
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-sm, 8px);
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -55,4 +55,37 @@
 
 .btn-danger:hover:not(:disabled) {
   opacity: 0.9;
+}
+
+/* Outline Variants */
+.btn-outline-primary {
+  background-color: transparent;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background-color: var(--accent-primary);
+  color: #fff;
+}
+
+.btn-outline-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-outline-secondary:hover:not(:disabled) {
+  background-color: var(--border-color);
+}
+
+.btn-outline-danger {
+  background-color: transparent;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+}
+
+.btn-outline-danger:hover:not(:disabled) {
+  background-color: var(--error-color);
+  color: #fff;
 }

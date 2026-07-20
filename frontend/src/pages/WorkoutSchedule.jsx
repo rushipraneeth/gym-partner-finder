@@ -9,7 +9,7 @@ import DashboardHeader from '../components/DashboardHeader';
 import './WorkoutSchedule.css';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const ALL_MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Cardio', 'Full Body'];
+const ALL_MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Cardio', 'Full Body'];
 
 const WorkoutSchedule = () => {
   const { addToast } = useToast();

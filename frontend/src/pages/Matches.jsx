@@ -14,6 +14,9 @@ const Matches = () => {
   const [matches, setMatches] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [connections, setConnections] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
+  const [receivedRequests, setReceivedRequests] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const { addToast } = useToast();
@@ -25,7 +28,23 @@ const Matches = () => {
   useEffect(() => {
     fetchMatches();
     fetchAllUsers();
+    fetchRelationships();
   }, []);
+
+  const fetchRelationships = async () => {
+    try {
+      const [connRes, sentRes, recRes] = await Promise.all([
+        api.get('/api/partner-requests/connections'),
+        api.get('/api/partner-requests/sent'),
+        api.get('/api/partner-requests/received')
+      ]);
+      if (connRes.data.success) setConnections(connRes.data.connections);
+      if (sentRes.data.success) setSentRequests(sentRes.data.sentRequests);
+      if (recRes.data.success) setReceivedRequests(recRes.data.receivedRequests);
+    } catch (error) {
+      console.error('Failed to fetch relationships', error);
+    }
+  };
 
   const fetchMatches = async () => {
     try {
@@ -56,11 +75,40 @@ const Matches = () => {
       const res = await api.post('/api/partner-requests', { receiverId });
       if (res.data.success) {
         addToast('Partner request sent!', 'success');
-        // Optionally, remove the user from matches or mark as pending
+        fetchRelationships(); // Refresh status instantly
       }
     } catch (error) {
       addToast(error.response?.data?.message || error.message || 'Failed to send request', 'error');
     }
+  };
+
+  const getRelationshipStatus = (candidateId) => {
+    const isConnected = connections.some(c => 
+      (c.user1._id === candidateId || c.user2._id === candidateId)
+    );
+    if (isConnected) return 'connected';
+
+    const isSent = sentRequests.some(r => r.receiverId._id === candidateId && r.status === 'pending');
+    if (isSent) return 'sent';
+
+    const isReceived = receivedRequests.some(r => r.senderId._id === candidateId && r.status === 'pending');
+    if (isReceived) return 'received';
+
+    return 'none';
+  };
+
+  const renderActionButton = (candidateId) => {
+    const status = getRelationshipStatus(candidateId);
+    
+    if (status === 'connected') {
+      return <Button variant="secondary" className="flex-1 w-100" disabled>Connected ✓</Button>;
+    } else if (status === 'sent') {
+      return <Button variant="secondary" className="flex-1 w-100" disabled>Request Sent</Button>;
+    } else if (status === 'received') {
+      return <Button variant="primary" className="flex-1 w-100" onClick={() => window.location.href = '/requests'}>Review Request</Button>;
+    }
+    
+    return <Button variant="primary" className="flex-1 w-100" onClick={() => sendRequest(candidateId)}>Send Partner Request</Button>;
   };
 
   const openDetails = (match) => {
@@ -127,9 +175,7 @@ const Matches = () => {
                     <Button variant="secondary" className="flex-1" onClick={() => openDetails(matchData)}>
                       View Details
                     </Button>
-                    <Button variant="primary" className="flex-1" onClick={() => sendRequest(candidate._id)}>
-                      Send Request
-                    </Button>
+                    {renderActionButton(candidate._id)}
                   </div>
                 </div>
               </div>
@@ -156,9 +202,7 @@ const Matches = () => {
                 
                 <div className="match-card-body mt-4">
                   <div className="flex mt-4">
-                    <Button variant="primary" className="w-100" onClick={() => sendRequest(candidate._id)}>
-                      Send Partner Request
-                    </Button>
+                    {renderActionButton(candidate._id)}
                   </div>
                 </div>
               </div>
@@ -202,16 +246,9 @@ const Matches = () => {
               </ul>
             </div>
             
-            <Button 
-              variant="primary" 
-              className="w-100 mt-4" 
-              onClick={() => {
-                sendRequest(selectedMatch.candidate._id);
-                setSelectedMatch(null);
-              }}
-            >
-              Send Partner Request
-            </Button>
+            <div className="mt-4">
+              {renderActionButton(selectedMatch.candidate._id)}
+            </div>
           </div>
         </Modal>
       )}
