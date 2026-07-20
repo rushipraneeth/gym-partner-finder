@@ -141,25 +141,38 @@ const Profile = () => {
                   </Button>
                 )}
               </div>
-              <input 
-                list="gym-options"
-                className="form-input" 
-                value={gymId} 
-                onChange={(e) => setGymId(e.target.value)}
-                required
-                disabled={!isEditing}
-                placeholder="Type or select your gym..."
-              />
-              <datalist id="gym-options">
-                {nearbyGyms.map(gym => (
-                  <option key={gym.id} value={gym.name} />
-                ))}
-                <option value="Gold's Gym (New York)" />
-                <option value="Planet Fitness (New York)" />
-                <option value="Crunch Fitness (New York)" />
-                <option value="Anytime Fitness (LA)" />
-                <option value="Equinox (LA)" />
-              </datalist>
+              {nearbyGyms.length > 0 && isEditing ? (
+                <select 
+                  className="form-input" 
+                  value={gymId} 
+                  onChange={(e) => setGymId(e.target.value)}
+                  required
+                >
+                  <option value="">-- Select a Gym --</option>
+                  {nearbyGyms.map(gym => (
+                    <option key={gym.id} value={gym.name}>{gym.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <>
+                  <input 
+                    list="gym-options"
+                    className="form-input" 
+                    value={gymId} 
+                    onChange={(e) => setGymId(e.target.value)}
+                    required
+                    disabled={!isEditing}
+                    placeholder="Type or select your gym..."
+                  />
+                  <datalist id="gym-options">
+                    <option value="Gold's Gym" />
+                    <option value="Planet Fitness" />
+                    <option value="Crunch Fitness" />
+                    <option value="Anytime Fitness" />
+                    <option value="Equinox" />
+                  </datalist>
+                </>
+              )}
             </div>
 
             <div className="form-group">
