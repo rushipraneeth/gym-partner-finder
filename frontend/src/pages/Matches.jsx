@@ -12,7 +12,7 @@ import './Matches.css';
 const Matches = () => {
   const [activeTab, setActiveTab] = useState('recommended'); // 'recommended' or 'all'
   const [matches, setMatches] = useState([]);
-  const [allUsers, setAllUsers] = useState([]);
+  const [hasSchedule, setHasSchedule] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connections, setConnections] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
@@ -27,9 +27,20 @@ const Matches = () => {
 
   useEffect(() => {
     fetchMatches();
-    fetchAllUsers();
+    fetchMySchedule();
     fetchRelationships();
   }, []);
+
+  const fetchMySchedule = async () => {
+    try {
+      const res = await api.get('/api/users/matching-profile');
+      if (res.data.success && res.data.matchingProfile?.workoutSchedule?.length > 0) {
+        setHasSchedule(true);
+      }
+    } catch (error) {
+      // Ignored
+    }
+  };
 
   const fetchRelationships = async () => {
     try {
@@ -59,16 +70,7 @@ const Matches = () => {
     }
   };
 
-  const fetchAllUsers = async () => {
-    try {
-      const res = await api.get('/test-user');
-      if (res.data.success) {
-        setAllUsers(res.data.data.filter(u => u._id !== user.id)); // Exclude self
-      }
-    } catch (error) {
-      console.error('Failed to fetch all users', error);
-    }
-  };
+  // allUsers api removed as it's no longer needed
 
   const sendRequest = async (receiverId) => {
     try {
@@ -161,10 +163,16 @@ const Matches = () => {
       {filteredMatches.length === 0 ? (
         <div className="empty-state glass-card text-center py-5">
           <h3>No matches found right now.</h3>
-          <p className="text-secondary">You must configure your Weekly Workout Schedule first, or there are no users matching you &gt;60% right now.</p>
-          <Button variant="primary" className="mt-4" onClick={() => window.location.href = '/schedule'}>
-            Configure Schedule
-          </Button>
+          {!hasSchedule ? (
+            <>
+              <p className="text-secondary">You must configure your Weekly Workout Schedule first to find matches.</p>
+              <Button variant="primary" className="mt-4" onClick={() => window.location.href = '/schedule'}>
+                Configure Schedule
+              </Button>
+            </>
+          ) : (
+            <p className="text-secondary">There are no users in your gym matching your schedule &gt;60% right now. Check back later!</p>
+          )}
         </div>
       ) : activeTab === 'recommended' ? (
         <div className="matches-grid">
