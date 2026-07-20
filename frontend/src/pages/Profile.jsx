@@ -40,11 +40,25 @@ const Profile = () => {
     navigator.geolocation.getCurrentPosition(async (position) => {
       const { latitude, longitude } = position.coords;
       try {
-        const res = await api.get(`/api/users/nearby-gyms?lat=${latitude}&lon=${longitude}`);
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=gym+fitness&lat=${latitude}&lon=${longitude}&limit=20`;
+        const response = await fetch(url);
         
-        if (res.data.success && res.data.gyms.length > 0) {
-          setNearbyGyms(res.data.gyms);
-          addToast(`Found ${res.data.gyms.length} real gyms near you!`, 'success');
+        if (!response.ok) throw new Error('Failed to fetch');
+        
+        const data = await response.json();
+        
+        const gyms = data
+          .filter(el => el.name || el.display_name)
+          .map(el => ({
+            id: `nom-${el.place_id}`,
+            name: el.name && el.name.toLowerCase() !== 'gym' ? el.name : (el.display_name.split(',')[0] || 'Local Gym')
+          }));
+          
+        const uniqueGyms = Array.from(new Map(gyms.map(item => [item.name, item])).values());
+        
+        if (uniqueGyms.length > 0) {
+          setNearbyGyms(uniqueGyms);
+          addToast(`Found ${uniqueGyms.length} real gyms near you!`, 'success');
         } else {
           addToast('No gyms found within 5km of your location.', 'info');
         }
