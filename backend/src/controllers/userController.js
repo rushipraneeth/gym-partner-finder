@@ -22,7 +22,7 @@ export const createUserProfile = async (req, res, next) => {
       });
     }
 
-    user.gymId = gymId;
+    user.gymId = gymId.trim();
     user.goal = goal;
     user.experienceLevel = experienceLevel;
 
@@ -64,7 +64,7 @@ export const selectGym = async (req, res, next) => {
       });
     }
 
-    user.gymId = gymId;
+    user.gymId = gymId.trim();
 
     await user.save();
 
