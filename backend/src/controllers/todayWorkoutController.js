@@ -243,3 +243,22 @@ export const getTodayMatches = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deactivateLookingToday = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const todayStr = getISTDateString();
+
+    await TodayWorkout.findOneAndDelete({
+      userId,
+      localDateString: todayStr,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Looking Today deactivated successfully.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

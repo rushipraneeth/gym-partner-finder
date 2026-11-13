@@ -3,11 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
-import DashboardHeader from '../components/DashboardHeader';
+import PageHeader from '../components/common/PageHeader';
 import Button from '../components/Button';
 import Loader from '../components/Loader';
+import EmptyState from '../components/common/EmptyState';
 import Modal from '../components/Modal';
-import Input from '../components/Input';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import UserAvatar from '../components/common/UserAvatar';
+import {
+  UserCheck,
+  MessageSquare,
+  Shield,
+  AlertTriangle,
+  ArrowRight,
+} from '../components/common/Icons';
+import './Connections.css';
 
 const Connections = () => {
   const [connections, setConnections] = useState([]);
@@ -16,17 +26,23 @@ const Connections = () => {
   const { addToast } = useToast();
   const navigate = useNavigate();
 
-  // Reporting State
+  // Block Dialog State
+  const [userToBlock, setUserToBlock] = useState(null);
+  const [blocking, setBlocking] = useState(false);
+
+  // Report Modal State
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [userToReport, setUserToReport] = useState(null);
   const [reportReason, setReportReason] = useState('Inappropriate Behavior');
   const [reportDescription, setReportDescription] = useState('');
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     fetchConnections();
   }, []);
 
   const fetchConnections = async () => {
+    setLoading(true);
     try {
       const res = await api.get('/api/partner-requests/connections');
       if (res.data.success) {
@@ -41,10 +57,8 @@ const Connections = () => {
 
   const openChat = async (partnerId) => {
     try {
-      // API call to create or get conversation
       const res = await api.post('/api/conversations', { otherUserId: partnerId });
       if (res.data.success) {
-        // Navigate to chat with conversationId or partnerId selected
         navigate(`/chat?c=${res.data.conversation._id}`);
       }
     } catch (error) {
@@ -52,77 +66,135 @@ const Connections = () => {
     }
   };
 
-  const handleBlock = async (blockedId) => {
-    if (!window.confirm("Are you sure you want to block this user? They will no longer be able to interact with you.")) return;
+  const handleConfirmBlock = async () => {
+    if (!userToBlock) return;
+    setBlocking(true);
     try {
-      const res = await api.post('/api/blocks', { blockedId });
+      const res = await api.post('/api/blocks', { blockedId: userToBlock._id });
       if (res.data.success) {
-        addToast('User blocked successfully.', 'success');
-        fetchConnections(); // Refresh list to remove them
+        addToast(`User ${userToBlock.username} blocked successfully.`, 'info');
+        setUserToBlock(null);
+        fetchConnections();
       }
     } catch (error) {
       addToast(error.response?.data?.message || 'Failed to block user', 'error');
+    } finally {
+      setBlocking(false);
     }
   };
 
   const handleOpenReport = (partner) => {
     setUserToReport(partner);
+    setReportReason('Inappropriate Behavior');
+    setReportDescription('');
     setReportModalOpen(true);
   };
 
-  const submitReport = async () => {
+  const submitReport = async (e) => {
+    e.preventDefault();
     if (!reportDescription.trim()) {
-      addToast('Please provide a description.', 'error');
+      addToast('Please provide details for the report.', 'warning');
       return;
     }
+    setReporting(true);
     try {
       const res = await api.post('/api/reports', {
         reportedUserId: userToReport._id,
         reason: reportReason,
-        description: reportDescription
+        description: reportDescription,
       });
       if (res.data.success) {
-        addToast('User reported successfully to moderation.', 'success');
+        addToast('Report submitted successfully to moderation.', 'success');
         setReportModalOpen(false);
-        setReportDescription('');
+        setUserToReport(null);
       }
-    } catch(error) {
-       addToast(error.response?.data?.message || 'Failed to report user', 'error');
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Failed to report user', 'error');
+    } finally {
+      setReporting(false);
     }
   };
 
-  if (loading) return <Loader />;
+  if (loading) return <Loader text="Loading your gym partners..." />;
 
   return (
-    <div className="connections-page animate-fade-in pb-10">
-      <DashboardHeader />
-      <p className="text-secondary mb-4">Users you have successfully connected with.</p>
+    <div className="connections-view animate-fade-in">
+      <PageHeader
+        title="Partner Directory"
+        description="Your established workout partners. Coordinate routines via direct messaging or manage connection safety."
+        badge={<span className="badge badge-success">{connections.length} Active Partners</span>}
+      />
 
       {connections.length === 0 ? (
-        <div className="glass-card text-center py-5">
-          <h3>No connections yet</h3>
-          <p className="text-secondary">Send requests to your matches to build connections!</p>
-        </div>
+        <EmptyState
+          icon={UserCheck}
+          title="No confirmed partners yet"
+          description="Send invitations to members with matching workout splits in Find Partners to build your gym buddy network."
+          action={
+            <Button variant="primary" onClick={() => navigate('/matches')}>
+              Find Compatible Partners <ArrowRight size={14} />
+            </Button>
+          }
+        />
       ) : (
-        <div className="matches-grid">
-          {connections.map(conn => {
-            // Determine which user is the partner (not the current user)
-            const partner = conn.user1._id === user.id ? conn.user2 : conn.user1;
-            
+        <div className="connections-grid">
+          {connections.map((conn) => {
+            const partner = conn.user1?._id === user?.id ? conn.user2 : conn.user1;
+            if (!partner) return null;
+
             return (
-              <div key={conn._id} className="glass-card flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="match-avatar" style={{width: '50px', height: '50px', fontSize: '1.5rem'}}>
-                    {partner.username.charAt(0).toUpperCase()}
+              <div key={conn._id} className="card connection-card flex flex-col justify-between">
+                <div className="card-body">
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <UserAvatar name={partner.username} size="lg" isOnline />
+                      <div className="min-w-0">
+                        <h3 className="truncate" style={{ fontSize: '1rem', margin: 0 }}>
+                          {partner.username}
+                        </h3>
+                        <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                          {partner.email}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className="badge badge-success" style={{ fontSize: '0.6875rem' }}>
+                      Connected
+                    </span>
                   </div>
-                  <div>
-                    <h3 style={{margin: '0', fontSize: '1.25rem', fontWeight: 600}}>{partner.username}</h3>
-                  </div>
+
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', margin: 0 }}>
+                    Active training partner. Real-time messaging enabled.
+                  </p>
                 </div>
-                <div className="flex items-center gap-2 w-100">
-                  <Button variant="outline-secondary" size="sm" className="flex-1" onClick={() => handleBlock(partner._id)}>Block</Button>
-                  <Button variant="outline-danger" size="sm" className="flex-1" onClick={() => handleOpenReport(partner)}>Report</Button>
-                  <Button variant="outline-primary" size="sm" className="flex-1" onClick={() => openChat(partner._id)}>Chat</Button>
+
+                <div className="card-footer" style={{ padding: '0.875rem 1.25rem' }}>
+                  <div className="flex items-center gap-2 w-full">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => openChat(partner._id)}
+                    >
+                      <MessageSquare size={14} /> Message
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      title="Block user"
+                      onClick={() => setUserToBlock(partner)}
+                    >
+                      <Shield size={14} />
+                    </Button>
+                    <Button
+                      variant="outline-danger"
+                      size="sm"
+                      title="Report user"
+                      onClick={() => handleOpenReport(partner)}
+                    >
+                      <AlertTriangle size={14} />
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
@@ -130,48 +202,71 @@ const Connections = () => {
         </div>
       )}
 
+      {/* Block Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={!!userToBlock}
+        onClose={() => setUserToBlock(null)}
+        onConfirm={handleConfirmBlock}
+        title={`Block ${userToBlock?.username}?`}
+        message="This user will be disconnected and will no longer be able to message you, view your profile, or send partner requests."
+        confirmText="Block Partner"
+        variant="danger"
+        loading={blocking}
+      />
+
       {/* Report Modal */}
       {userToReport && (
-        <Modal 
-          isOpen={reportModalOpen} 
-          onClose={() => setReportModalOpen(false)} 
+        <Modal
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
           title={`Report ${userToReport.username}`}
+          subtitle="Reports are confidential and reviewed by moderation"
+          maxWidth="480px"
         >
-          <div className="p-2">
-            <p className="text-secondary mb-4">Please provide details about why you are reporting this user. False reports may result in account suspension.</p>
-            
-            <div className="form-group mb-3">
-              <label className="form-label">Reason</label>
-              <select 
-                className="form-input" 
-                value={reportReason} 
+          <form onSubmit={submitReport}>
+            <div className="form-group mb-4">
+              <label className="form-label">Reason for Report</label>
+              <select
+                className="form-select"
+                value={reportReason}
                 onChange={(e) => setReportReason(e.target.value)}
               >
                 <option value="Inappropriate Behavior">Inappropriate Behavior</option>
-                <option value="Spam or Scam">Spam or Scam</option>
-                <option value="Harassment">Harassment</option>
-                <option value="Fake Profile">Fake Profile</option>
+                <option value="Spam or Scam">Spam or Commercial Scam</option>
+                <option value="Harassment">Harassment or Abuse</option>
+                <option value="Fake Profile">Impersonation / Fake Profile</option>
                 <option value="Other">Other</option>
               </select>
             </div>
-            
-            <div className="form-group mb-4">
-              <label className="form-label">Description</label>
-              <textarea 
-                className="form-input" 
-                rows="4" 
-                placeholder="Provide more details..."
+
+            <div className="form-group mb-5">
+              <label className="form-label">
+                Description
+                <span className="form-label-hint">Provide specific context</span>
+              </label>
+              <textarea
+                className="form-textarea"
+                rows="4"
+                placeholder="Explain what happened so our trust and safety team can take appropriate action..."
                 value={reportDescription}
                 onChange={(e) => setReportDescription(e.target.value)}
-                style={{ width: '100%', resize: 'vertical' }}
-              ></textarea>
+                required
+              />
             </div>
-            
-            <div className="flex gap-2">
-              <Button variant="secondary" className="flex-1" onClick={() => setReportModalOpen(false)}>Cancel</Button>
-              <Button variant="primary" className="flex-1" style={{backgroundColor: '#ef4444'}} onClick={submitReport}>Submit Report</Button>
+
+            <div className="modal-actions-bar">
+              <Button
+                variant="secondary"
+                type="button"
+                onClick={() => setReportModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button variant="danger" type="submit" disabled={reporting}>
+                {reporting ? 'Submitting...' : 'Submit Report'}
+              </Button>
             </div>
-          </div>
+          </form>
         </Modal>
       )}
     </div>

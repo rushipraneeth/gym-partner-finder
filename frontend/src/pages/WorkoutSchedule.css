@@ -1,101 +1,138 @@
-.timetable-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-}
-
-.day-card {
+.schedule-view {
   display: flex;
   flex-direction: column;
 }
 
-.day-card.empty {
-  border-style: dashed;
-  opacity: 0.8;
+.weekly-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
 }
 
-.day-card.configured {
-  border-left: 4px solid var(--accent-primary);
-}
-
-.day-header {
+.day-routine-card {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-color);
+  min-height: 220px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  transition: all var(--transition-fast);
 }
 
-.badge-success {
-  background-color: rgba(34, 197, 94, 0.2);
-  color: var(--success-color);
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--border-radius);
-  font-size: 0.75rem;
-  font-weight: 600;
+.day-routine-card.configured {
+  border-top: 3px solid var(--primary);
 }
 
-.time-block {
-  margin-bottom: 1rem;
-  font-weight: 500;
+.day-routine-card.rest-day {
+  border-top: 3px solid var(--border-strong);
+  opacity: 0.92;
 }
 
-.muscle-tags {
+.day-routine-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
-.tag {
-  background-color: var(--bg-tertiary);
+.day-title {
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--text-primary);
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--border-radius-full);
-  font-size: 0.85rem;
-  border: 1px solid var(--border-color);
+  margin: 0 0 0.25rem;
 }
 
-.empty-state {
+.day-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.icon-action-btn {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.icon-action-btn:hover {
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-primary);
+}
+
+.icon-action-btn.danger:hover {
+  background-color: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.day-routine-body {
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.time-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--bg-surface-subtle);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  width: fit-content;
+}
+
+.muscles-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rest-day-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
-  padding: 1rem 0;
+  height: 100%;
   text-align: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
 }
 
-.alert-info {
-  background-color: rgba(14, 165, 233, 0.1);
-  color: var(--accent-secondary);
-  padding: 1rem;
-  border-radius: var(--border-radius);
-  border: 1px solid rgba(14, 165, 233, 0.3);
+.rest-text {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  margin: 0;
 }
 
-.muscle-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+@media (max-width: 1200px) {
+  .weekly-calendar-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-.muscle-chip {
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius-full);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  background-color: var(--bg-tertiary);
-  user-select: none;
+@media (max-width: 800px) {
+  .weekly-calendar-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.muscle-chip:hover {
-  border-color: var(--accent-primary);
-}
-
-.muscle-chip.selected {
-  background-color: var(--accent-primary);
-  color: #fff;
-  border-color: var(--accent-primary);
+@media (max-width: 520px) {
+  .weekly-calendar-grid {
+    grid-template-columns: 1fr;
+  }
 }

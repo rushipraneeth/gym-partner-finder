@@ -1,0 +1,59 @@
+.settings-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-toggle-strip {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.theme-mode-card {
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-surface);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+}
+
+.theme-mode-card:hover {
+  background-color: var(--bg-surface-subtle);
+  border-color: var(--border-strong);
+}
+
+.theme-mode-card.active {
+  border-color: var(--primary);
+  background-color: var(--primary-subtle);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.theme-preview {
+  height: 64px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.theme-preview.light-preview {
+  background-color: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.theme-preview.dark-preview {
+  background-color: #090b10;
+  border-color: #1e293b;
+}
+
+.danger-zone-card {
+  border-color: var(--danger-border);
+  background-color: var(--danger-subtle);
+}
+
+@media (max-width: 640px) {
+  .theme-toggle-strip {
+    grid-template-columns: 1fr;
+  }
+}

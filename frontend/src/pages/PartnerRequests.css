@@ -1,0 +1,20 @@
+.requests-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.requests-list-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.request-card {
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .requests-list-grid {
+    grid-template-columns: 1fr;
+  }
+}

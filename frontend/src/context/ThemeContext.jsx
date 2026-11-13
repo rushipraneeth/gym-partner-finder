@@ -5,7 +5,9 @@ const ThemeContext = createContext();
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }) => {
-  const [theme] = useState('light'); // Hardcoded to light mode
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'light';
+  });
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -13,7 +15,7 @@ export const ThemeProvider = ({ children }) => {
   }, [theme]);
 
   const toggleTheme = () => {
-    // Disabled: App is permanently in light mode
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
   return (

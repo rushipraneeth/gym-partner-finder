@@ -1,0 +1,36 @@
+.saas-app-shell {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-canvas);
+}
+
+.saas-main-viewport {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-normal);
+}
+
+.saas-page-content {
+  flex: 1;
+  padding: 1.75rem 2rem 3rem;
+  overflow-y: auto;
+}
+
+.saas-page-boundary {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .saas-main-viewport {
+    margin-left: 0;
+  }
+
+  .saas-page-content {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+}

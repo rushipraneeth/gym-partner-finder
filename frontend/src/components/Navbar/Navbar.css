@@ -1,70 +1,145 @@
-.navbar {
-  display: none; /* Hidden on desktop to match Bento layout */
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    display: flex;
-    height: 70px;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 1rem;
-    background-color: var(--bg-app);
-    border-bottom: 1px solid var(--border-color);
-  }
-}
-
-.navbar-left, .navbar-right {
+.saas-topbar {
+  height: var(--topbar-height);
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.menu-btn {
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.topbar-menu-trigger {
   display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.375rem;
+  border-radius: var(--radius-sm);
 }
 
-.theme-toggle-btn {
-  display: none; /* Hide for this specific Light Bento UI */
+.topbar-menu-trigger:hover {
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-primary);
 }
 
-.user-profile-badge {
+.topbar-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.84375rem;
+}
+
+.breadcrumb-root {
+  color: var(--text-muted);
+}
+
+.breadcrumb-separator {
+  color: var(--border-strong);
+  font-size: 0.75rem;
+}
+
+.breadcrumb-current {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.topbar-right {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 1rem 0.5rem 0.5rem;
-  background-color: var(--bg-card);
-  border-radius: 99px;
-  border: 1px solid var(--border-color);
 }
 
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: var(--bg-sidebar);
-  color: var(--text-inverse);
-  display: flex;
-  justify-content: center;
+.topbar-quick-action {
+  display: inline-flex;
   align-items: center;
-  font-weight: 700;
-  font-size: 1.1rem;
-}
-
-.username {
-  font-weight: 600;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface-subtle);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  border: 1px solid var(--border-subtle);
+  text-decoration: none;
+  transition: all var(--transition-fast);
 }
 
-@media (max-width: 768px) {
-  .menu-btn {
-    display: block;
+.topbar-quick-action:hover {
+  background-color: var(--bg-surface-hover);
+  border-color: var(--border-default);
+}
+
+.topbar-icon-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.topbar-icon-btn:hover {
+  background-color: var(--bg-surface-subtle);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.topbar-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.topbar-profile-link:hover {
+  background-color: var(--bg-surface-subtle);
+  border-color: var(--border-default);
+}
+
+.topbar-username {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+  .topbar-menu-trigger {
+    display: flex;
   }
-  .navbar {
+}
+
+@media (max-width: 640px) {
+  .saas-topbar {
     padding: 0 1rem;
   }
-  .d-none-sm {
+
+  .quick-action-text {
+    display: none;
+  }
+
+  .topbar-username {
     display: none;
   }
 }

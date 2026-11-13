@@ -1,0 +1,26 @@
+.connections-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.connections-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+.connection-card {
+  height: 100%;
+}
+
+@media (max-width: 1024px) {
+  .connections-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .connections-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,24 +2,29 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar/Sidebar';
 import Navbar from '../components/Navbar/Navbar';
+import './AppLayout.css';
 
 const AppLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const closeSidebar = () => {
+    setIsSidebarOpen(false);
   };
 
   return (
-    <div className="app-wrapper">
-      <div className="app-container">
-        <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
-        <div className="main-content">
-          <Navbar toggleSidebar={toggleSidebar} />
-          <main className="page-container">
+    <div className="saas-app-shell">
+      <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+      <div className="saas-main-viewport">
+        <Navbar toggleSidebar={toggleSidebar} />
+        <main className="saas-page-content">
+          <div className="saas-page-boundary">
             <Outlet />
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

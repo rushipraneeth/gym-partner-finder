@@ -1,17 +1,45 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import api from '../services/api';
+import PageHeader from '../components/common/PageHeader';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Loader from '../components/Loader';
+import EmptyState from '../components/common/EmptyState';
+import UserAvatar from '../components/common/UserAvatar';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import {
+  Zap,
+  Clock,
+  Dumbbell,
+  CheckCircle,
+  Users,
+  AlertCircle,
+  ArrowRight,
+  Plus,
+} from '../components/common/Icons';
+import './LookingToday.css';
 
-const ALL_MUSCLES = ['Chest', 'Back', 'Legs', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Core', 'Cardio', 'Full Body'];
+const ALL_MUSCLES = [
+  'Chest',
+  'Back',
+  'Legs',
+  'Shoulders',
+  'Biceps',
+  'Triceps',
+  'Forearms',
+  'Core',
+  'Cardio',
+  'Full Body',
+];
 
 const LookingToday = () => {
   const { user } = useAuth();
   const { addToast } = useToast();
-  
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(true);
   const [isLookingToday, setIsLookingToday] = useState(false);
   const [startTime, setStartTime] = useState('17:00');
@@ -20,6 +48,8 @@ const LookingToday = () => {
   const [todayMatches, setTodayMatches] = useState([]);
   const [updating, setUpdating] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
 
   useEffect(() => {
     checkStatusAndFetchMatches();
@@ -31,12 +61,9 @@ const LookingToday = () => {
       if (res.data.success) {
         setIsLookingToday(true);
         setTodayMatches(res.data.todayMatches || []);
-        // NOTE: The backend API /api/today/matches returns matches if we are activated.
       }
     } catch (error) {
-      if (error.message === 'Please activate Looking Today first.') {
-        setIsLookingToday(false);
-      }
+      setIsLookingToday(false);
     } finally {
       setLoading(false);
     }
@@ -44,12 +71,31 @@ const LookingToday = () => {
 
   const handleActivate = async () => {
     try {
-      await api.post('/api/today/activate');
-      setIsLookingToday(true);
-      addToast('Activated Looking Today!', 'success');
-      checkStatusAndFetchMatches();
+      const res = await api.post('/api/today/activate');
+      if (res.data.success) {
+        setIsLookingToday(true);
+        addToast('Activated Looking Today status!', 'success');
+        checkStatusAndFetchMatches();
+      }
     } catch (error) {
-      addToast(error.message || 'Failed to activate', 'error');
+      addToast(error.response?.data?.message || error.message || 'Failed to activate', 'error');
+    }
+  };
+
+  const handleDeactivate = async () => {
+    setDeactivating(true);
+    try {
+      const res = await api.post('/api/today/deactivate');
+      if (res.data.success) {
+        setIsLookingToday(false);
+        setTodayMatches([]);
+        setShowDeactivateDialog(false);
+        addToast('Looking Today status deactivated.', 'info');
+      }
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Failed to deactivate', 'error');
+    } finally {
+      setDeactivating(false);
     }
   };
 
@@ -59,12 +105,12 @@ const LookingToday = () => {
     try {
       await Promise.all([
         api.put('/api/today/workout', { muscleGroups: selectedMuscles }),
-        api.put('/api/today/time', { startTime, endTime })
+        api.put('/api/today/time', { startTime, endTime }),
       ]);
-      addToast('Today\'s workout details updated!', 'success');
+      addToast("Today's workout details updated!", 'success');
       setUpdateSuccess(true);
       setTimeout(() => setUpdateSuccess(false), 3000);
-      checkStatusAndFetchMatches(); // Refresh matches based on new time/muscles
+      checkStatusAndFetchMatches();
     } catch (error) {
       addToast('Failed to update details', 'error');
     } finally {
@@ -72,119 +118,257 @@ const LookingToday = () => {
     }
   };
 
+  const toggleMuscle = (muscle) => {
+    if (selectedMuscles.includes(muscle)) {
+      setSelectedMuscles(selectedMuscles.filter((m) => m !== muscle));
+    } else {
+      setSelectedMuscles([...selectedMuscles, muscle]);
+    }
+  };
+
   const sendRequest = async (receiverId) => {
     try {
       const res = await api.post('/api/partner-requests', { receiverId });
       if (res.data.success) {
-        addToast('Partner request sent!', 'success');
+        addToast('Partner request sent successfully!', 'success');
       }
     } catch (error) {
       addToast(error.response?.data?.message || error.message || 'Failed to send request', 'error');
     }
   };
 
-  const toggleMuscle = (muscle) => {
-    if (selectedMuscles.includes(muscle)) {
-      setSelectedMuscles(selectedMuscles.filter(m => m !== muscle));
-    } else {
-      setSelectedMuscles([...selectedMuscles, muscle]);
-    }
-  };
-
-  if (loading) return <Loader />;
+  if (loading) return <Loader text="Checking today's workout status..." />;
 
   return (
-    <div className="looking-today-page animate-fade-in">
-      <h1 className="mb-4">Looking for Partner Today</h1>
-      
-      {!isLookingToday ? (
-        <div className="glass-card text-center py-5 border-warning" style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>⚡</div>
-          <h2 className="mb-2">Find a Partner for Today</h2>
-          
-          {!user?.gymId ? (
-            <>
-              <p className="text-secondary mb-4">You must select a gym in your Profile before you can find partners today!</p>
-              <Button variant="primary" size="lg" onClick={() => window.location.href = '/profile'}>
-                Complete Profile
-              </Button>
-            </>
+    <div className="looking-today-view animate-fade-in">
+      <PageHeader
+        title="Looking for Partner Today"
+        description="Instant same-day matchmaking. Activate your availability to find other members at your gym training at the same hours today."
+        badge={
+          isLookingToday ? (
+            <span className="badge badge-success">
+              <span className="badge-dot" /> Active Now
+            </span>
           ) : (
-            <>
-              <p className="text-secondary mb-4">Activate this feature to find other users at your gym who are also looking for a partner today.</p>
-              <Button variant="primary" size="lg" onClick={handleActivate}>
-                Activate Looking Today
-              </Button>
-            </>
-          )}
+            <span className="badge badge-neutral">Offline</span>
+          )
+        }
+      />
+
+      {!user?.gymId ? (
+        <EmptyState
+          icon={AlertCircle}
+          title="Gym Location Required"
+          description="You must select your gym in your profile before you can match with other athletes today."
+          action={
+            <Button variant="primary" onClick={() => navigate('/profile')}>
+              Select Gym <ArrowRight size={14} />
+            </Button>
+          }
+        />
+      ) : !isLookingToday ? (
+        <div className="card text-center py-8 px-6 activation-hero-card mb-6">
+          <div className="activation-icon-wrapper mb-4">
+            <Zap size={32} color="var(--primary)" />
+          </div>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+            Ready to train today at {user.gymId}?
+          </h2>
+          <p
+            style={{
+              fontSize: '0.875rem',
+              color: 'var(--text-muted)',
+              maxWidth: '440px',
+              margin: '0 auto 1.5rem',
+            }}
+          >
+            By activating Looking Today, your profile and training window become visible to other
+            members at your gym with at least 30 minutes of time overlap.
+          </p>
+          <Button variant="primary" size="lg" onClick={handleActivate}>
+            <Zap size={16} /> Activate Looking Today
+          </Button>
         </div>
       ) : (
-        <div className="flex-col gap-4">
-          <div className="glass-card">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="m-0 text-primary">Status: Active</h2>
-              <span className="badge-success">Looking Today</span>
-            </div>
-            
-            <form onSubmit={handleUpdateDetails}>
-              <h3 className="mb-2">Update Today's Workout Details</h3>
-              <div className="flex gap-2">
-                <Input label="Start Time" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required />
-                <Input label="End Time" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} required />
-              </div>
-              <div className="form-group mt-2">
-                <label className="form-label">Muscle Groups</label>
-                <div className="muscle-grid">
-                  {ALL_MUSCLES.map(muscle => (
-                    <div 
-                      key={muscle} 
-                      className={`muscle-chip ${selectedMuscles.includes(muscle) ? 'selected' : ''}`}
-                      onClick={() => toggleMuscle(muscle)}
-                    >
-                      {muscle}
-                    </div>
-                  ))}
+        <div className="looking-today-active-layout flex flex-col gap-6">
+          {/* Status & Timing Form Card */}
+          <div className="card">
+            <div className="card-header">
+              <div className="flex items-center gap-3">
+                <div
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: 'var(--radius-md)',
+                    backgroundColor: 'var(--success-subtle)',
+                    color: 'var(--success)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Zap size={18} />
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '1rem', margin: 0 }}>Status: Currently Active</h3>
+                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', margin: 0 }}>
+                    Visible to {user.gymId} members for today's session
+                  </p>
                 </div>
               </div>
-              <Button type="submit" variant={updateSuccess ? "primary" : "secondary"} className="mt-4" disabled={updating}>
-                {updating ? 'Updating...' : updateSuccess ? '✓ Updated Successfully!' : 'Update Details'}
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDeactivateDialog(true)}
+              >
+                Deactivate Status
               </Button>
-            </form>
+            </div>
+
+            <div className="card-body">
+              <form onSubmit={handleUpdateDetails}>
+                <h4 style={{ fontSize: '0.9375rem', marginBottom: '1rem' }}>
+                  Update Today's Workout Details
+                </h4>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <Input
+                    label="Workout Start Time"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    required
+                  />
+                  <Input
+                    label="Workout End Time"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="form-group mb-4">
+                  <label className="form-label">
+                    Target Muscle Groups Today
+                    <span className="form-label-hint">Select what you plan to train</span>
+                  </label>
+                  <div className="muscle-chips-selector">
+                    {ALL_MUSCLES.map((muscle) => {
+                      const isSelected = selectedMuscles.includes(muscle);
+                      return (
+                        <button
+                          key={muscle}
+                          type="button"
+                          className={`muscle-chip-btn ${isSelected ? 'selected' : ''}`}
+                          onClick={() => toggleMuscle(muscle)}
+                        >
+                          <Dumbbell size={12} />
+                          {muscle}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Button type="submit" variant="primary" disabled={updating}>
+                    {updating ? 'Saving...' : updateSuccess ? '✓ Details Saved' : 'Update Today’s Details'}
+                  </Button>
+                  {updateSuccess && (
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--success)' }}>
+                      Match pool updated automatically!
+                    </span>
+                  )}
+                </div>
+              </form>
+            </div>
           </div>
 
+          {/* Today's Matched Partners */}
           <div>
-            <h2 className="mb-4 mt-4">Today's Matches ({todayMatches.length})</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h3 style={{ fontSize: '1.125rem', margin: 0 }}>
+                Partners Training Today ({todayMatches.length})
+              </h3>
+              <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                Min 30-min time overlap required
+              </span>
+            </div>
+
             {todayMatches.length === 0 ? (
-              <p className="text-secondary">No one else at your gym is looking today with a matching time slot (at least 30 min overlap).</p>
+              <EmptyState
+                icon={Users}
+                title="No one else has checked in yet"
+                description="You are active in the today's partner directory! We'll notify you as soon as someone with an overlapping time slot activates their status."
+              />
             ) : (
-              <div className="matches-grid">
-                {todayMatches.map((match) => (
-                  <div key={match.candidate.userId._id} className="glass-card match-card">
-                    <div className="match-card-header">
-                      <div className="match-avatar">{match.candidate.userId.username.charAt(0).toUpperCase()}</div>
-                      <div className="match-info">
-                        <h3>{match.candidate.userId.username}</h3>
-                        <span className="text-secondary text-sm">
-                          {match.candidate.startTime} - {match.candidate.endTime}
-                        </span>
+              <div className="today-matches-grid">
+                {todayMatches.map((match) => {
+                  const { candidate, overlapMinutes, commonWorkouts } = match;
+                  return (
+                    <div key={candidate.userId._id} className="card today-match-card flex flex-col justify-between">
+                      <div className="card-body">
+                        <div className="flex items-center gap-3 mb-3">
+                          <UserAvatar name={candidate.userId.username} size="md" />
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate" style={{ fontSize: '0.9375rem', margin: 0 }}>
+                              {candidate.userId.username}
+                            </h4>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              {candidate.startTime && candidate.endTime
+                                ? `${candidate.startTime} - ${candidate.endTime}`
+                                : 'Exact times private'}
+                            </span>
+                          </div>
+                          <span className="badge badge-success">
+                            {overlapMinutes} min overlap
+                          </span>
+                        </div>
+
+                        {commonWorkouts && commonWorkouts.length > 0 && (
+                          <div className="mb-2">
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              Common Split:{' '}
+                            </span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                              {commonWorkouts.join(', ')}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="match-card-body mt-4">
-                      <p className="text-sm"><strong>Overlap:</strong> {match.overlapMinutes} mins</p>
-                      <p className="text-sm"><strong>Common Workout:</strong> {match.commonWorkouts.join(', ') || 'None'}</p>
-                      <div className="mt-4 flex">
-                        <Button variant="primary" className="w-100" onClick={() => sendRequest(match.candidate.userId._id)}>
-                          Workout Together (Send Request)
+
+                      <div className="card-footer" style={{ padding: '0.75rem 1.25rem' }}>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => sendRequest(candidate.userId._id)}
+                        >
+                          Send Partner Request
                         </Button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
       )}
+
+      {/* Confirm Deactivation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeactivateDialog}
+        onClose={() => setShowDeactivateDialog(false)}
+        onConfirm={handleDeactivate}
+        title="Deactivate Looking Today?"
+        message="Your profile will be removed from today's matching pool until you activate it again."
+        confirmText="Deactivate"
+        variant="danger"
+        loading={deactivating}
+      />
     </div>
   );
 };
