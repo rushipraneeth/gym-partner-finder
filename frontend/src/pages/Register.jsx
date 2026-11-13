@@ -63,7 +63,7 @@ const Register = () => {
               Explore Features <ArrowDown size={14} />
             </button>
             <a 
-              href="https://github.com" 
+              href="https://github.com/rushipraneeth/gym-partner-finder" 
               target="_blank" 
               rel="noreferrer" 
               className="link-github"
