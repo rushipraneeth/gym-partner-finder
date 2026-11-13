@@ -71,20 +71,6 @@ const Register = () => {
               View on GitHub <ExternalLink size={13} />
             </a>
           </div>
-
-          <div className="demo-access-card" style={{ cursor: 'default' }}>
-            <div className="demo-card-icon-badge">
-              <Shield size={20} />
-            </div>
-            <div className="demo-card-content">
-              <div className="demo-card-header-label">
-                <span>COMMUNITY VERIFIED</span>
-              </div>
-              <div style={{ fontSize: '0.8125rem', color: '#64748b', lineHeight: 1.45 }}>
-                Private workout schedule sync, verified home gyms, and dedicated partner matching.
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* RIGHT COLUMN: CREATE ACCOUNT CARD */}
