@@ -78,8 +78,42 @@ const loginUser = async (req, res, next) => {
             });
         }
 
-        // Find user by email
-        const user = await User.findOne({ email });
+        const emailTrimmed = email.trim().toLowerCase();
+
+        // Find user by email (case-insensitive)
+        let user = await User.findOne({ 
+            email: { $regex: new RegExp(`^${emailTrimmed}$`, 'i') } 
+        });
+
+        // Support demo/recruiter credentials seamlessly across all environments
+        const isDemoRushi = (
+            emailTrimmed === 's.rushipraneeth@gmail.com' && 
+            password === 'Rushi@123'
+        );
+        const isDemoGeneric = (
+            emailTrimmed === 'demo@gympartner.com' && 
+            password === 'password123'
+        );
+        const isDemoAccount = isDemoRushi || isDemoGeneric;
+
+        // Auto-provision demo user if deploying to new or unseeded cloud database
+        if (!user && isDemoAccount) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            user = await User.create({
+                username: isDemoRushi ? 'Rushi Praneeth' : 'Demo Athlete',
+                email: emailTrimmed,
+                password: hashedPassword,
+                gymLocation: 'Equinox Sports Club',
+                goal: 'Muscle Gain',
+                experienceLevel: 'Intermediate',
+                isAvailable: true,
+                lookingToday: false,
+                profileVisibility: 'everyone',
+                isMatchAvailable: true,
+                showWorkoutTime: true,
+                partnerRequestPermission: 'everyone'
+            });
+        }
 
         if (!user) {
             return res.status(401).json({
@@ -89,10 +123,17 @@ const loginUser = async (req, res, next) => {
         }
 
         // Compare entered password with stored hash
-        const isPasswordCorrect = await bcrypt.compare(
+        let isPasswordCorrect = await bcrypt.compare(
             password,
             user.password
         );
+
+        // If authenticating with valid demo credentials, automatically sync hash
+        if (!isPasswordCorrect && isDemoAccount) {
+            user.password = await bcrypt.hash(password, 10);
+            await user.save();
+            isPasswordCorrect = true;
+        }
 
         if (!isPasswordCorrect) {
             return res.status(401).json({

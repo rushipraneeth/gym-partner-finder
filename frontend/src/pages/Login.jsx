@@ -9,7 +9,8 @@ import {
   Users, 
   Zap, 
   Calendar, 
-  Shield 
+  Eye, 
+  EyeOff 
 } from '../components/common/Icons';
 import './Auth.css';
 
@@ -19,26 +20,33 @@ const DEMO_PASSWORD = 'Rushi@123';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [demoNotice, setDemoNotice] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLoginSubmit = async (e, customEmail, customPassword) => {
     if (e) e.preventDefault();
     setLoading(true);
-    const success = await login(email, password);
+    const targetEmail = (customEmail !== undefined ? customEmail : email).trim();
+    const targetPassword = customPassword !== undefined ? customPassword : password;
+    const success = await login(targetEmail, targetPassword);
     setLoading(false);
     if (success) {
       navigate('/');
     }
   };
 
-  const fillDemoCredentials = () => {
+  const handleFillDemo = (autoLogin = false) => {
     setEmail(DEMO_EMAIL);
     setPassword(DEMO_PASSWORD);
     setDemoNotice(true);
-    setTimeout(() => setDemoNotice(false), 3500);
+    setTimeout(() => setDemoNotice(false), 4000);
+
+    if (autoLogin) {
+      handleLoginSubmit(null, DEMO_EMAIL, DEMO_PASSWORD);
+    }
   };
 
   const scrollToFeatures = () => {
@@ -78,7 +86,7 @@ const Login = () => {
               Explore Features <ArrowDown size={14} />
             </button>
             <a 
-              href="https://github.com" 
+              href="https://github.com/rushipraneeth/gym-partner-finder" 
               target="_blank" 
               rel="noreferrer" 
               className="link-github"
@@ -90,30 +98,49 @@ const Login = () => {
           {/* Recruiter / Demo Access Card */}
           <div 
             className="demo-access-card" 
-            onClick={fillDemoCredentials}
-            title="Click to auto-fill demo credentials"
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter') fillDemoCredentials(); }}
+            style={{ display: 'block' }}
           >
-            <div className="demo-card-icon-badge">
-              <Key size={20} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="demo-card-icon-badge">
+                <Key size={20} />
+              </div>
+              <div className="demo-card-content">
+                <div className="demo-card-header-label">
+                  <span>RECRUITER / DEMO ACCESS</span>
+                  <span className={`demo-pill-click ${demoNotice ? 'active-filled' : ''}`}>
+                    {demoNotice ? '✓ Credentials Filled' : 'Verified Access'}
+                  </span>
+                </div>
+                <div className="demo-field-row">
+                  <span className="demo-field-label">Email:</span>
+                  <span className="demo-field-value">{DEMO_EMAIL}</span>
+                </div>
+                <div className="demo-field-row">
+                  <span className="demo-field-label">password:</span>
+                  <span className="demo-field-value">{DEMO_PASSWORD}</span>
+                </div>
+              </div>
             </div>
-            <div className="demo-card-content">
-              <div className="demo-card-header-label">
-                <span>RECRUITER / DEMO ACCESS</span>
-                <span className={`demo-pill-click ${demoNotice ? 'active-filled' : ''}`}>
-                  {demoNotice ? '✓ Filled!' : 'Click to Auto-fill'}
-                </span>
-              </div>
-              <div className="demo-field-row">
-                <span className="demo-field-label">Email:</span>
-                <span className="demo-field-value">{DEMO_EMAIL}</span>
-              </div>
-              <div className="demo-field-row">
-                <span className="demo-field-label">password:</span>
-                <span className="demo-field-value">{DEMO_PASSWORD}</span>
-              </div>
+
+            {/* Direct Action Buttons on Card */}
+            <div className="demo-card-actions">
+              <button 
+                type="button" 
+                className="btn-demo-pill" 
+                onClick={() => handleFillDemo(false)}
+                title="Populate login form with demo credentials"
+              >
+                Auto-Fill Form
+              </button>
+              <button 
+                type="button" 
+                className="btn-demo-pill-primary" 
+                onClick={() => handleFillDemo(true)}
+                disabled={loading}
+                title="Instant 1-click login without browser interference"
+              >
+                {loading ? 'Signing in...' : '1-Click Sign In →'}
+              </button>
             </div>
           </div>
         </div>
@@ -126,7 +153,7 @@ const Login = () => {
             <div className="auth-inner-white-box">
               <h3 className="auth-inner-title">Sign in</h3>
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={(e) => handleLoginSubmit(e)}>
                 <div className="auth-form-field">
                   <label htmlFor="auth-email">Email</label>
                   <input
@@ -143,16 +170,28 @@ const Login = () => {
 
                 <div className="auth-form-field">
                   <label htmlFor="auth-password">Password</label>
-                  <input
-                    id="auth-password"
-                    type="password"
-                    className="auth-field-input"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    autoComplete="current-password"
-                  />
+                  <div className="password-input-wrapper">
+                    <input
+                      id="auth-password"
+                      type={showPassword ? 'text' : 'password'}
+                      className="auth-field-input"
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      autoComplete="current-password"
+                      style={{ paddingRight: '2.5rem' }}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle-btn"
+                      onClick={() => setShowPassword(!showPassword)}
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="auth-sub-actions">
@@ -161,7 +200,7 @@ const Login = () => {
                     className="auth-forgot-link"
                     onClick={(e) => {
                       e.preventDefault();
-                      alert('To reset your password, contact support or create a fresh account.');
+                      alert('To reset your password in demo mode, contact support or register a fresh account.');
                     }}
                   >
                     Forgot password?
